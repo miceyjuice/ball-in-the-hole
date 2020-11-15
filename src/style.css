@@ -1,0 +1,9 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+#gameBoard {
+  background-image: url("./iPhone\ X\,\ XS\,\ 11\ Pro\ –\ 1.png");
+  background-position: center;
+  background-size: cover;
+}
