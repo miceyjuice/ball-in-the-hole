@@ -1,5 +1,6 @@
 const boardCanvas = document.querySelector("#gameBoard");
 const context = boardCanvas.getContext("2d");
+const startTime = Date.now();
 
 class Hole {
   constructor(positionX, positionY, size, color) {
@@ -77,10 +78,10 @@ class MobileOrientation {
 
 const mobileOrientation = new MobileOrientation(0, 0);
 
-const hole1 = new Hole(350, 510, 30, "#ffffff");
+const hole1 = new Hole(132, 270, 22, "#ffffff");
 const hole2 = new Hole(85, 705, 25, "#ffffff");
-const hole3 = new Hole(132, 270, 22, "#ffffff");
-const hole4 = new Hole(420, 100, 40, "#ffffff");
+const hole3 = new Hole(350, 510, 30, "#ffffff");
+const exit = new Hole(420, 100, 40, "#ffffff");
 const ball = new Ball(
   window.innerWidth / 2,
   window.innerHeight / 1.1,
@@ -104,8 +105,8 @@ const update = () => {
 
   //TODO: get this bitch property from mobile
   const { alpha, beta } = mobileOrientation.getOrientation();
-  console.log(`Pozycja X: ${alpha}, Pozycja Y: ${beta}`);
-  console.log("");
+  // console.log(`Pozycja X: ${alpha}, Pozycja Y: ${beta}`);
+  // console.log("");
 
   //TODO: create if connected with this bitch property
   if (alpha > 0 && beta > 0) {
@@ -141,12 +142,52 @@ const update = () => {
   hole1.draw();
   hole2.draw();
   hole3.draw();
-  hole4.draw();
+  exit.draw();
   ball.draw();
 
-  setTimeout(update, 1);
+  if (ballHoleCollide(ball, hole1)) {
+    console.log("Ball and hole1 collided!");
+  }
+  if (ballHoleCollide(ball, hole2)) console.log("Ball and hole collided!");
+  if (ballHoleCollide(ball, hole3)) console.log("Ball and hole collided!");
+  if (ballHoleCollide(ball, exit)) console.log("Ball and hole collided!");
+
+  setTimeout(update, 30);
 };
+
+const roundTimer = () => {
+  let interval = 1000;
+  let expected = Date.now() + interval;
+  let second = 0;
+  let timerDiv = document.querySelector(".timer");
+  setTimeout(step, interval);
+  function step() {
+    let dt = Date.now() - expected;
+    if (dt > interval) {
+      console.log("Bad shit happened");
+    }
+
+    timerDiv.innerHTML = ++second;
+
+    expected += interval;
+    setTimeout(step, Math.max(0, interval - dt));
+  }
+};
+
+const ballHoleCollide = (ball, hole) => {
+  const distanceX = hole.positionX - ball.positionX;
+  const distanceY = hole.positionY - ball.positionY;
+  const radiusSum = hole.size / 2 + ball.size / 2;
+
+  if (distanceX * distanceX + distanceY * distanceY < radiusSum * radiusSum) {
+    hole.color = "#fce3cc";
+    return true;
+  }
+  return false;
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   resizeCanvas();
   update();
+  roundTimer();
 });

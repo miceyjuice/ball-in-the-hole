@@ -88,17 +88,20 @@ const handleDeviceOrientation = (e) => {
   }
 
   context.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-  hole(context, 350, 510, 30);
-  hole(context, 85, 705, 25);
-  hole(context, 132, 270, 22);
-  hole(context, 420, 100, 40);
+  const hole1 = hole(context, 350, 510, 30);
+  const hole2 = hole(context, 85, 705, 25);
+  const hole3 = hole(context, 132, 270, 22);
+  const hole4 = hole(context, 420, 100, 40);
   if (x < window.innerWidth && x > 20 && y < window.innerHeight && y > 20) {
-    ball(context, x, y, 20);
+    const ball = ball(context, x, y, 20);
   }
-  setTimeout(update, 1);
+  ballHoleCollide(ball, hole1);
 };
 
-const update = (targetX, targetY) => {};
+const ballHoleCollide = (ball, hole) => {
+  console.log(ball);
+  console.log(hole);
+};
 
 const getRandomColor = () => {
   let letters = "0123456789ABCDEF";
