@@ -1,13 +1,13 @@
 const boardCanvas = document.querySelector("#gameBoard");
 const context = boardCanvas.getContext("2d");
-const startTime = Date.now();
 
 class Hole {
-  constructor(positionX, positionY, size, color) {
+  constructor(positionX, positionY, size, color, order) {
     this.positionX = positionX;
     this.positionY = positionY;
     this.size = size;
     this.color = color;
+    this.order = order;
   }
 
   getCoordinates() {
@@ -29,11 +29,12 @@ class Hole {
 }
 
 class Ball {
-  constructor(positionX, positionY, size, color) {
+  constructor(positionX, positionY, size, color, order) {
     this.positionX = positionX;
     this.positionY = positionY;
     this.size = size;
     this.color = color;
+    this.order = order;
   }
 
   getCoordinates() {
@@ -78,15 +79,16 @@ class MobileOrientation {
 
 const mobileOrientation = new MobileOrientation(0, 0);
 
-const hole1 = new Hole(132, 270, 22, "#ffffff");
-const hole2 = new Hole(85, 705, 25, "#ffffff");
-const hole3 = new Hole(350, 510, 30, "#ffffff");
-const exit = new Hole(420, 100, 40, "#ffffff");
+const hole1 = new Hole(132, 270, 22, "#ffffff", 1);
+const hole2 = new Hole(85, 705, 25, "#ffffff", 2);
+const hole3 = new Hole(350, 510, 30, "#ffffff", 3);
+const exit = new Hole(420, 100, 40, "#ffffff", 4);
 const ball = new Ball(
   window.innerWidth / 2,
   window.innerHeight / 1.1,
   20,
-  "#ffffff"
+  "#ffffff",
+  1
 );
 
 window.addEventListener("deviceorientation", (e) => {
@@ -108,33 +110,33 @@ const update = () => {
   // console.log(`Pozycja X: ${alpha}, Pozycja Y: ${beta}`);
   // console.log("");
 
+  let { positionX, positionY } = ball.getCoordinates();
+
+  positionX -= alpha * 0.05;
+  positionY -= beta * 0.05;
+
   //TODO: create if connected with this bitch property
   if (alpha > 0 && beta > 0) {
-    let { positionX, positionY } = ball.getCoordinates();
     positionX += 1;
     positionY += 1;
     ball.setCoordinates(positionX, positionY);
   }
   if (alpha > 0 && beta < 0) {
-    let { positionX, positionY } = ball.getCoordinates();
     positionX += 1;
     positionY -= 1;
     ball.setCoordinates(positionX, positionY);
   }
   if (alpha < 0 && beta > 0) {
-    let { positionX, positionY } = ball.getCoordinates();
     positionX -= 1;
     positionY += 1;
     ball.setCoordinates(positionX, positionY);
   }
   if (alpha < 0 && beta < 0) {
-    let { positionX, positionY } = ball.getCoordinates();
     positionX -= 1;
     positionY -= 1;
     ball.setCoordinates(positionX, positionY);
   }
   if (beta < 0 && beta > -90) {
-    let { positionX, positionY } = ball.getCoordinates();
     positionY -= 1;
     ball.setCoordinates(positionX, positionY);
   }
@@ -145,14 +147,12 @@ const update = () => {
   exit.draw();
   ball.draw();
 
-  if (ballHoleCollide(ball, hole1)) {
-    console.log("Ball and hole1 collided!");
-  }
-  if (ballHoleCollide(ball, hole2)) console.log("Ball and hole collided!");
-  if (ballHoleCollide(ball, hole3)) console.log("Ball and hole collided!");
-  if (ballHoleCollide(ball, exit)) console.log("Ball and hole collided!");
+  ballHoleOrderCollide(ball, hole1);
+  ballHoleOrderCollide(ball, hole2);
+  ballHoleOrderCollide(ball, hole3);
+  ballHoleOrderCollide(ball, exit);
 
-  setTimeout(update, 30);
+  if (ball.order === 5) console.log("wygrales gre kurwo");
 };
 
 const roundTimer = () => {
@@ -167,27 +167,28 @@ const roundTimer = () => {
       console.log("Bad shit happened");
     }
 
-    timerDiv.innerHTML = ++second;
+    timerDiv.innerHTML = `Round time: ${++second}s`;
 
     expected += interval;
     setTimeout(step, Math.max(0, interval - dt));
   }
 };
 
-const ballHoleCollide = (ball, hole) => {
+const ballHoleOrderCollide = (ball, hole) => {
   const distanceX = hole.positionX - ball.positionX;
   const distanceY = hole.positionY - ball.positionY;
   const radiusSum = hole.size / 2 + ball.size / 2;
 
   if (distanceX * distanceX + distanceY * distanceY < radiusSum * radiusSum) {
-    hole.color = "#fce3cc";
-    return true;
+    if (ball.order == hole.order) {
+      hole.color = "#fce3cc";
+      ball.order++;
+    }
   }
-  return false;
 };
 
 document.addEventListener("DOMContentLoaded", () => {
   resizeCanvas();
-  update();
   roundTimer();
+  setInterval(update, 10);
 });
