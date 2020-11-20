@@ -1,13 +1,15 @@
 const boardCanvas = document.querySelector("#gameBoard");
 const context = boardCanvas.getContext("2d");
+let timer = 0;
 
 class Hole {
-  constructor(positionX, positionY, size, color, order) {
+  constructor(positionX, positionY, size, color, order, active) {
     this.positionX = positionX;
     this.positionY = positionY;
     this.size = size;
     this.color = color;
     this.order = order;
+    this.active = active;
   }
 
   getCoordinates() {
@@ -19,12 +21,15 @@ class Hole {
     };
   }
 
-  //TODO: method that draw Hole on canvas
   draw() {
     context.beginPath();
     context.arc(this.positionX, this.positionY, this.size, 0, 2 * Math.PI);
     context.fillStyle = this.color;
     context.fill();
+    context.font = "20px sans-serif";
+    context.fillStyle = "black";
+    context.textAlign = "center";
+    context.fillText(this.order, this.positionX, this.positionY + 7);
   }
 }
 
@@ -51,7 +56,6 @@ class Ball {
     this.positionY = positionY;
   }
 
-  //TODO: method that draw Ball on canvas
   draw() {
     context.beginPath();
     context.arc(this.positionX, this.positionY, this.size, 0, 2 * Math.PI);
@@ -79,10 +83,10 @@ class MobileOrientation {
 
 const mobileOrientation = new MobileOrientation(0, 0);
 
-const hole1 = new Hole(132, 270, 22, "#ffffff", 1);
-const hole2 = new Hole(85, 705, 25, "#ffffff", 2);
-const hole3 = new Hole(350, 510, 30, "#ffffff", 3);
-const exit = new Hole(420, 100, 40, "#ffffff", 4);
+const hole1 = new Hole(100, 200, 22, "#ffffff", 1, false);
+const hole2 = new Hole(65, 530, 25, "#ffffff", 2, false);
+const hole3 = new Hole(260, 380, 30, "#ffffff", 3, false);
+const exit = new Hole(315, 80, 30, "#ffffff", 4, false);
 const ball = new Ball(
   window.innerWidth / 2,
   window.innerHeight / 1.1,
@@ -98,22 +102,19 @@ window.addEventListener("deviceorientation", (e) => {
 const resizeCanvas = () => {
   boardCanvas.width = window.innerWidth;
   boardCanvas.height = window.innerHeight;
+  update();
 };
 window.addEventListener("resize", resizeCanvas);
 
 const update = () => {
-  //TODO:  redraw board function
   context.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
 
-  //TODO: get this bitch property from mobile
   const { alpha, beta } = mobileOrientation.getOrientation();
-  // console.log(`Pozycja X: ${alpha}, Pozycja Y: ${beta}`);
-  // console.log("");
 
   let { positionX, positionY } = ball.getCoordinates();
 
-  positionX += alpha * 0.05;
-  positionY += beta * 0.05;
+  positionX += alpha * 0.1;
+  positionY += beta * 0.1;
 
   ball.setCoordinates(positionX, positionY);
 
@@ -127,25 +128,24 @@ const update = () => {
   ballHoleOrderCollide(ball, hole2);
   ballHoleOrderCollide(ball, hole3);
   ballHoleOrderCollide(ball, exit);
-
-  if (ball.order === 5) console.log("wygrales gre kurwo");
 };
 
 const roundTimer = () => {
   let interval = 1000;
   let expected = Date.now() + interval;
-  let second = 0;
   let timerDiv = document.querySelector(".timer");
+  timerDiv.innerHTML = `Game time: 0s`;
   setTimeout(step, interval);
   function step() {
     let dt = Date.now() - expected;
     if (dt > interval) {
       console.log("Bad shit happened");
     }
-
-    timerDiv.innerHTML = `Round time: ${++second}s`;
+    timer += 1;
+    timerDiv.innerHTML = `Game time: ${timer}s`;
 
     expected += interval;
+
     setTimeout(step, Math.max(0, interval - dt));
   }
 };
@@ -156,11 +156,39 @@ const ballHoleOrderCollide = (ball, hole) => {
   const radiusSum = hole.size / 2 + ball.size / 2;
 
   if (distanceX * distanceX + distanceY * distanceY < radiusSum * radiusSum) {
-    if (ball.order == hole.order) {
+    if (ball.order === hole.order && hole.active === false) {
       hole.color = "#fce3cc";
+      hole.active = true;
       ball.order++;
-    }
+    } else if (ball.order === 5) {
+      gameWon();
+    } else if (ball.order != hole.order && hole.active === false) gameLost();
   }
+};
+
+const gameLost = () => {
+  const gameLostDiv = document.querySelector(".gamelost");
+  const gameRestart = document.querySelector(".gamelost button");
+
+  boardCanvas.style.display = "none";
+  gameLostDiv.style.display = "flex";
+
+  gameRestart.addEventListener("click", () => {
+    location.reload();
+  });
+};
+
+const gameWon = () => {
+  const winTime = document.querySelector(".timeSection p");
+  const gameRestart = document.querySelector(".gamewon button");
+  const gameWonDiv = document.querySelector(".gamewon");
+
+  boardCanvas.style.display = "none";
+  gameWonDiv.style.display = "flex";
+  winTime.innerHTML = `${timer}s`;
+  gameRestart.addEventListener("click", () => {
+    location.reload();
+  });
 };
 
 document.addEventListener("DOMContentLoaded", () => {
