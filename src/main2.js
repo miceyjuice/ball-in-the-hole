@@ -112,34 +112,10 @@ const update = () => {
 
   let { positionX, positionY } = ball.getCoordinates();
 
-  positionX -= alpha * 0.05;
-  positionY -= beta * 0.05;
+  positionX += alpha * 0.05;
+  positionY += beta * 0.05;
 
-  //TODO: create if connected with this bitch property
-  if (alpha > 0 && beta > 0) {
-    positionX += 1;
-    positionY += 1;
-    ball.setCoordinates(positionX, positionY);
-  }
-  if (alpha > 0 && beta < 0) {
-    positionX += 1;
-    positionY -= 1;
-    ball.setCoordinates(positionX, positionY);
-  }
-  if (alpha < 0 && beta > 0) {
-    positionX -= 1;
-    positionY += 1;
-    ball.setCoordinates(positionX, positionY);
-  }
-  if (alpha < 0 && beta < 0) {
-    positionX -= 1;
-    positionY -= 1;
-    ball.setCoordinates(positionX, positionY);
-  }
-  if (beta < 0 && beta > -90) {
-    positionY -= 1;
-    ball.setCoordinates(positionX, positionY);
-  }
+  ball.setCoordinates(positionX, positionY);
 
   hole1.draw();
   hole2.draw();
